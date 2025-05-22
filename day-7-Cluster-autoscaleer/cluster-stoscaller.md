@@ -27,6 +27,49 @@ This command provides information about the current node group, including its sc
 
 ### **Step 2: Attach IAM Policy for Cluster Autoscaler**  
 EKS worker nodes need proper IAM permissions to manage Auto Scaling Groups (ASG). Attach the **AmazonEKSClusterAutoscalerPolicy** to the IAM role of your worker nodes.
+go cluster compute, then node group, select given IAM you will able to see attach policy, you want to add one more policy for autoscalar
+📍In the AWS Console:
+Go to IAM → Roles.
+
+Find and click the IAM role used by your EKS worker nodes.
+
+Click Add inline policy.
+
+Go to the JSON tab (recommended for precision), and paste the following policy:
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeTags",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeLaunchTemplateVersions"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+
+
+
+Click Review Policy.
+
+Give it a name like AmazonEKSClusterAutoscalerPolicy.
+
+Click Create policy.
+
+
 
 ---
 ### **Step 3: Install Helm packge on server**  
