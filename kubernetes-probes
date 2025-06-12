@@ -1,0 +1,71 @@
+Kubernetes probes
+DevOpsLab-LiveScenarios
+DevOpsLab-LiveScenarios
+
+Follow
+2 min read
+·
+3 days ago
+1
+
+
+
+
+
+
+probe means to check. A probe is a health check that Kubernetes performs on containers. Three types of probes:
+
+1-StartupProbe
+2-ReadinessProbe
+3-LivenessProbe
+StartupProbe — Is the container started? K8S will direct traffic to the pod only if startupProbe passes.
+StartupProbe is a signal whether an app or container has successfully started.
+
+If this probe is setup, k8s will ignore the other probes (livenss and readiness) until the startup probe succeeds.
+
+if startupPorbe fails, it wont check readinessProbe and livenessProbe.
+
+Scenarios where to use startupProbe:
+
+Purpose: Checks if the container has successfully started — beyond just being alive or ready for traffic.
+
+Acts as a gate: Kubernetes disables readiness and liveness checks until the startup probe succeeds.
+Once it passes once, the other probes resume functioning.
+When to use StartupProbe?
+
+Slow-start apps (e.g., JVM, Python with DB migrations, large assets, cache warmup) hackernoon.com+15kubernetes.io+15thelinuxcode.com+15kubeops.net+10engineering-blog.eden-reich.com+10dev.to+10
+Heavy initialization tasks (compilation, large file loading, ML model warm-up)
+Waiting for external dependencies (DBs, caches, services) or downstream apps to be reachable. May be webserver is communicating to backend database.
+startupProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  failureThreshold: 30
+ports:
+- name: http
+  containerPort: 8081
+  protocol: TCP
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+port: http refers to the named port 8081 specified under ports.
+HTTP probes (liveness/readiness) send GETs to / by default — success = stable, failure = restart or withdraw from traffic.
+What it does: Kubelet issues an HTTP GET to http://<pod-ip>:8081/ (because “http” maps to port 8081).
+Healthy response: Any HTTP status code in the range 200–399.
+The probes check the root path / — ensure your app responds here with 2xx/3xx. If not, the default is a 404 → unhealthy.
+
+1
+
+
+
+
+
